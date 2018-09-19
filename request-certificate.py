@@ -23,6 +23,13 @@ def configure_argument_parser():
     )
 
     parser.add_argument(
+        '--r53_profile',
+        default=default_profile,
+        help="The name tied to your boto profile (to use for Route 53). Use if your hosted zone is in a different account (default: '%s')" %
+        (default_profile),
+    )
+
+    parser.add_argument(
         '--region',
         default=default_region,
         help=
@@ -50,7 +57,7 @@ def configure_argument_parser():
 
 args = configure_argument_parser()
 
-cert_client = DNSValidatedACMCertClient(args.domain, args.profile, args.region)
+cert_client = DNSValidatedACMCertClient(args.domain, args.profile, args.r53_profile, args.region)
 arn = cert_client.request_certificate(args.domain,
                                       args.subject_alternative_names)
 print("Certificate created. ARN: %s" % arn)

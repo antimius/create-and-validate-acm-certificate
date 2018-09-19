@@ -6,10 +6,11 @@ import time
 
 class DNSValidatedACMCertClient():
 
-    def __init__(self, domain, profile='default', region='us-east-1'):
+    def __init__(self, domain, profile='default', r53_profile='default', region='us-east-1'):
         self.session = boto3.Session(profile_name=profile, region_name=region)
+        self.r53_session = boto3.Session(profile_name=r53_profile, region_name=region)
         self.acm_client = self.session.client('acm')
-        self.route_53_client = self.session.client('route53')
+        self.route_53_client = self.r53_session.client('route53')
         self.domain = domain
 
     def get_certificate_arn(self, response):
@@ -120,10 +121,14 @@ class DNSValidatedACMCertClient():
         hosted_zone_id = self.get_hosted_zone_id()
         print("Hosted Zone ID: %s" % hosted_zone_id)
 
-        changes = [
-            self.create_dns_record_set(record)
-            for record in domain_validation_records
-        ]
+        names = set()
+        changes = []
+        for record in domain_validation_records:
+            record_type, record_name, record_value = self.get_resource_record_data(
+                record.get('ResourceRecord'))
+            if(record_name not in names):
+                changes.append(self.create_dns_record_set(record))
+                names.add(record_name)
         response = self.route_53_client.change_resource_record_sets(
             HostedZoneId=hosted_zone_id, ChangeBatch={
                 'Changes': changes,
