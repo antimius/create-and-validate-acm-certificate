@@ -58,6 +58,17 @@ You can also pass a custom AWS profile name, or region:
             <alternate name> \
             <another alternate name>
 
+If your Route 53 zones live in a different account, add --r53_profile:
+
+    python request-certificate.py \
+        --profile personal \
+        --r53_profile dns \
+        --region us-east-1 \
+        --domain <domain> \
+        --subject_alternative_names \
+            <alternate name> \
+            <another alternate name>
+
 ## Credits
 
 I'm very grateful to the contributors of these libraries:
